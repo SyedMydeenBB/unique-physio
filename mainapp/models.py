@@ -48,6 +48,7 @@ class Patient(models.Model):
 
 
 class DailySheet(models.Model):
+	patient_id = models.ForeignKey(Patient, on_delete=models.CASCADE, blank=True, null=True)
 	date = models.DateField(blank=True, null=True,default="timezone.now", )
 	name = models.CharField(max_length=200,blank=True, null=True ,)
 	case_number = models.CharField(max_length=20,blank=True, null=True ,unique=False ,)
@@ -59,7 +60,9 @@ class DailySheet(models.Model):
 	payment_frequency = models.CharField(max_length=20,blank=True, null=True ,choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')],)
 	in_time = models.TimeField(blank=True, null=True,)
 	out_time = models.TimeField(blank=True, null=True,)
-	
+	explain_treatment = models.TextField(blank=True, null=True)
+	feedback = models.TextField(blank=True, null=True)
+
 	treatment_1 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)
 	treatment_2 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)
 	treatment_3 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)

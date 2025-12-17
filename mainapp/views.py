@@ -394,31 +394,38 @@ from django.contrib import messages
 from .models import DailySheet, Patient
 from .forms import DailySheetForm
 
-
+from django.utils import timezone
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.contrib import messages
 def daily_sheet_create(request):
     if request.method == 'POST':
         form = DailySheetForm(request.POST)
         if form.is_valid():
             daily_sheet = form.save(commit=False)
-
-            # Auto set in_time if case exists
-            if daily_sheet.case_number:
-                daily_sheet.in_time = timezone.localtime()
-
-            # Auto set out_time if payment status selected
-            if daily_sheet.payment_status:
-                daily_sheet.out_time = timezone.localtime()
-
+            
+            # Get current time
+            current_time = timezone.localtime()
+            
+            # Auto fill in_time if case_number is provided and in_time is empty
+            if daily_sheet.case_number and not daily_sheet.in_time:
+                daily_sheet.in_time = current_time
+                
+            # Auto fill out_time if payment_status is provided and out_time is empty
+            if daily_sheet.payment_status and not daily_sheet.out_time:
+                daily_sheet.out_time = current_time
+                
             daily_sheet.save()
             messages.success(request, 'Daily sheet entry created successfully!')
             return redirect('daily_sheet_list')
     else:
         form = DailySheetForm()
+        # Set initial date to today
+        form.fields['date'].initial = timezone.now().date()
 
     return render(request, 'daily_sheet_form.html', {'form': form})
 
 
-# 🔹 AJAX CHECK CASE NUMBER
 def check_case_number(request):
     case_number = request.GET.get('case_number')
 
@@ -426,12 +433,31 @@ def check_case_number(request):
         patient = Patient.objects.get(case_number=case_number)
         return JsonResponse({
             'exists': True,
+            'patient_id': patient.id,
             'name': patient.name,
-            'diagnosis': patient.chief_complaint
+            'diagnosis': patient.chief_complaint,
+            'age': patient.age,
+            'gender': patient.gender,
         })
     except Patient.DoesNotExist:
         return JsonResponse({'exists': False})
 
+
+def patient_followups(request, patient_id):
+    sheets = DailySheet.objects.filter(patient_id=patient_id).order_by('date')
+
+    data = []
+    for s in sheets:
+        data.append({
+            'date': s.date.strftime('%d-%m-%Y') if s.date else '',
+            'treatments': ", ".join(filter(None, [
+                s.treatment_1, s.treatment_2, s.treatment_3, s.treatment_4
+            ])),
+            'explain_treatment': s.explain_treatment,
+            'feedback': s.feedback
+        })
+
+    return JsonResponse({'data': data})
 
 def daily_sheet_update(request, pk):
     """Update an existing daily sheet entry"""

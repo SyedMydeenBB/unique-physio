@@ -21,7 +21,8 @@ urlpatterns = [
 
     path('dailysheet/', views.daily_sheet_list, name='daily_sheet_list'),
     path('dailysheet/new/', views.daily_sheet_create, name='daily_sheet_create'),
-    path('ajax/check-case-number/', views.check_case_number, name='check_case_number'),
+    path('ajax/check-case-number/', views.check_case_number),
+    path('ajax/patient-followups/<int:patient_id>/', views.patient_followups),
     path('dailysheet/<int:pk>/edit/', views.daily_sheet_update, name='daily_sheet_update'),
     path('dailysheet/<int:pk>/delete/', views.daily_sheet_delete, name='daily_sheet_delete'),
     path('dailysheet/export/', views.daily_sheet_export, name='daily_sheet_export'),
