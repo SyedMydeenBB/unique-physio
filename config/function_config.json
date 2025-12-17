@@ -1,0 +1,16 @@
+{
+    "functions": [
+        "dailysheet_view",
+        "pclist_create",
+        "patient_update",
+        "pclist_delete",
+        "dailysheet_create",
+        "dailysheet_delete",
+        "patient_create",
+        "pclist_update",
+        "dailysheet_update",
+        "patient_delete",
+        "patient_view",
+        "pclist_view"
+    ]
+}

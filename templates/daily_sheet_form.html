@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_block %}
+
+<div class="container-fluid py-4">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center bg-white rounded shadow-sm px-4 py-3 mb-4">
+    <h4 class="fw-semibold text-primary mb-0">
+      Add Daily Sheet
+    </h4>
+    <div id="datetime" class="text-muted small"></div>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="card shadow border-0">
+    <div class="card-body p-4">
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- BASIC INFORMATION -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-id-card me-2"></i> Basic Information
+          </h6>
+
+          <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-semibold">Date</label>
+              {{ form.date }}
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-semibold">Case Number *</label>
+              {{ form.case_number }}
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-semibold">Name *</label>
+              {{ form.name }}
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+              <label class="form-label fw-semibold">Diagnosis *</label>
+              {{ form.diagnosis }}
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT INFORMATION -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-rupee-sign me-2"></i> Payment Information
+          </h6>
+
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Charge</label>
+              {{ form.charge }}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Received</label>
+              {{ form.received }}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Payment Status</label>
+              {{ form.payment_status }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Payment Type</label>
+              {{ form.payment_type }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Payment Frequency</label>
+              {{ form.payment_frequency }}
+            </div>
+          </div>
+        </div>
+
+        <!-- TIME INFORMATION -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-clock me-2"></i> Time Information
+          </h6>
+
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">In Time</label>
+              {{ form.in_time }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Out Time</label>
+              {{ form.out_time }}
+            </div>
+          </div>
+        </div>
+
+        <!-- TREATMENT DETAILS -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-notes-medical me-2"></i> Treatment Details
+          </h6>
+
+          <div class="row g-4">
+            <div class="col-md-6">{{ form.treatment_1 }}</div>
+            <div class="col-md-6">{{ form.treatment_2 }}</div>
+            <div class="col-md-6">{{ form.treatment_3 }}</div>
+            <div class="col-md-6">{{ form.treatment_4 }}</div>
+          </div>
+        </div>
+
+        <!-- THERAPIST DETAILS -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-user-nurse me-2"></i> Therapist Details
+          </h6>
+
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Therapist 1</label>
+              {{ form.therapist_1 }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Therapist 2</label>
+              {{ form.therapist_2 }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="d-flex justify-content-end gap-3 border-top pt-4">
+          <a href="{% url 'daily_sheet_list' %}" class="btn btn-secondary px-4">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary px-4">
+            Save Entry
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- LIVE DATE & TIME -->
+<script>
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.toLocaleDateString() + " | " + now.toLocaleTimeString();
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+
+<!-- CASE NUMBER & TIME AUTO LOGIC -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const caseInput = document.getElementById("id_case_number");
+    const nameInput = document.getElementById("id_name");
+    const diagnosisInput = document.getElementById("id_diagnosis");
+    const paymentStatus = document.getElementById("id_payment_status");
+    const inTime = document.getElementById("id_in_time");
+    const outTime = document.getElementById("id_out_time");
+
+    caseInput.addEventListener("blur", function () {
+        const caseNumber = this.value.trim();
+        if (!caseNumber) return;
+
+        fetch(`/ajax/check-case-number/?case_number=${caseNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    nameInput.value = data.name;
+                    diagnosisInput.value = data.diagnosis;
+
+                    const now = new Date().toLocaleTimeString('en-GB');
+                    inTime.value = now;
+                } else {
+                    alert("Patient not found. Please create patient first.");
+                    nameInput.value = "";
+                    diagnosisInput.value = "";
+                }
+            });
+    });
+
+    paymentStatus.addEventListener("change", function () {
+        if (this.value) {
+            const now = new Date().toLocaleTimeString('en-GB');
+            outTime.value = now;
+        }
+    });
+});
+</script>
+
+{% endblock %}
