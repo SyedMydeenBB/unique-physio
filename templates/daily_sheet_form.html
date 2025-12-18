@@ -184,6 +184,13 @@
 <!-- ================= TAB 2 ================= -->
 <div class="tab-pane fade" id="followup" role="tabpanel">
 
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Patient Follow-up Details</h4>
+  <button id="downloadPdfBtn" class="btn btn-success" disabled>
+    <i class="fas fa-download me-2"></i>Download as PDF
+  </button>
+</div>
+
 <div class="card p-3 mb-3">
   <h5>Patient Details</h5>
   <p><strong>Name:</strong> <span id="f_name"></span></p>
@@ -194,7 +201,7 @@
 </div>
 
 <div class="table-responsive">
-  <table class="table table-bordered">
+  <table class="table table-bordered" id="followupTable">
     <thead>
       <tr>
         <th style="width: 15%">Date</th>
@@ -209,19 +216,23 @@
 </div>
 </div>
 </div>
-
-<!-- ================= JS ================= -->
+<!-- Include jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     let patientId = null;
+    let patientName = "";
+    let caseNumber = "";
     const currentTime = new Date().toTimeString().slice(0, 5);
 
     const caseInput = document.getElementById("id_case_number");
     const paymentStatusInput = document.getElementById("id_payment_status");
     const followupTab = document.getElementById("followup-tab");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
     // Auto-fill in_time when case number is entered
     if (caseInput) {
@@ -241,12 +252,41 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("id_patient_id").value = data.patient_id;
 
                     patientId = data.patient_id;
+                    patientName = data.name;
+                    caseNumber = this.value;
 
                     document.getElementById("f_name").innerText = data.name;
                     document.getElementById("f_case").innerText = this.value;
                     document.getElementById("f_age").innerText = data.age;
                     document.getElementById("f_gender").innerText = data.gender;
                     document.getElementById("f_diagnosis").innerText = data.diagnosis;
+                    
+                    // Enable download button
+                    downloadPdfBtn.disabled = false;
+                } else {
+                    // Show popup alert for non-existent case number
+                    alert("Patient not found. Create the patient first.");
+                    
+                    // Clear patient-related fields
+                    document.getElementById("id_name").value = "";
+                    document.getElementById("id_diagnosis").value = "";
+                    document.getElementById("id_patient_id").value = "";
+                    
+                    // Reset patient variables
+                    patientId = null;
+                    patientName = "";
+                    caseNumber = "";
+                    
+                    // Clear follow-up tab fields
+                    document.getElementById("f_name").innerText = "";
+                    document.getElementById("f_case").innerText = "";
+                    document.getElementById("f_age").innerText = "";
+                    document.getElementById("f_gender").innerText = "";
+                    document.getElementById("f_diagnosis").innerText = "";
+                    document.getElementById("followupBody").innerHTML = "";
+                    
+                    // Disable download button
+                    downloadPdfBtn.disabled = true;
                 }
             });
         });
@@ -281,6 +321,192 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
+
+    // PDF Download functionality
+    downloadPdfBtn.addEventListener("click", function() {
+        if (!patientId) {
+            alert("Please select a patient first");
+            return;
+        }
+
+        // Generate PDF filename
+        const filename = `${patientName.replace(/\s+/g, '_')}_${caseNumber}_Followup.pdf`;
+        
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+       // Add watermark
+        {% comment %}  doc.setFontSize(70);
+        doc.setTextColor(200, 200, 200);
+        doc.setFont("helvetica", "normal");
+        // Center watermark both horizontally and vertically
+        doc.text("Unique Physio and Rehabilitation Center", 
+                pageWidth / 2, 
+                pageHeight / 2, 
+                { align: 'center', baseline: 'middle', angle: 45 }); {% endcomment %}
+        
+        // Reset text color and font
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
+        
+        // Add header
+        doc.setFontSize(20);
+        doc.setFont("helvetica", "bold");
+        doc.text("PATIENT FOLLOW-UP DETAILS", pageWidth / 2, 25, { align: 'center' });
+        
+        // Draw header line
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(20, 30, pageWidth - 20, 30);
+        
+        // Add patient information
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        let yPos = 40;
+        
+        doc.text("PATIENT INFORMATION:", 20, yPos);
+        yPos += 10;
+        
+        doc.setFont("helvetica", "normal");
+        doc.text(`Name: ${patientName}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Case Number: ${caseNumber}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Age: ${document.getElementById("f_age").innerText}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Gender: ${document.getElementById("f_gender").innerText}`, 25, yPos);
+        yPos += 7;
+        doc.text(`Diagnosis: ${document.getElementById("f_diagnosis").innerText}`, 25, yPos);
+        
+        yPos += 15;
+        
+        // Add follow-up section header
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("FOLLOW-UP RECORDS", 20, yPos);
+        yPos += 10;
+        
+        // Add follow-up records
+        doc.setFontSize(12);
+        const tableBody = document.getElementById("followupBody");
+        const rows = tableBody.getElementsByTagName("tr");
+        
+        if (rows.length === 0) {
+            doc.setFont("helvetica", "normal");
+            doc.text("No follow-up records found.", 20, yPos);
+            yPos += 10;
+        } else {
+            for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+                const row = rows[rowIndex];
+                const cells = row.getElementsByTagName("td");
+                
+                if (cells.length >= 3) {
+                    const date = cells[0].innerText || '';
+                    const treatment = cells[1].innerText || '';
+                    const feedback = cells[2].innerText || '';
+                    
+                    // Calculate required height for this record
+                    const treatmentLines = doc.splitTextToSize(treatment, pageWidth - 60);
+                    const feedbackLines = doc.splitTextToSize(feedback, pageWidth - 60);
+                    const recordHeight = 8 + 5 + treatmentLines.length * 5 + 3 + 5 + feedbackLines.length * 5 + 10;
+                    
+                    // Check for page break
+                    if (yPos + recordHeight > pageHeight - 20) {
+                        doc.addPage();
+                        yPos = 20;
+                        
+                        // Add watermark to new page
+                        doc.setFontSize(60);
+                        doc.setTextColor(200, 200, 200);
+                        // Center watermark both horizontally and vertically
+                        doc.text("Unique Physio and Rehabilitation Center", 
+                                pageWidth / 2, 
+                                pageHeight / 2, 
+                                { align: 'center', baseline: 'middle', angle: 45 });
+                        doc.setTextColor(0, 0, 0);
+                        
+                        // Add follow-up section header on new page
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(16);
+                        doc.text("FOLLOW-UP RECORDS (Continued)", 20, yPos);
+                        yPos += 10;
+                    }
+                    
+                    // Save the starting position for the record
+                    const recordStartY = yPos;
+                    
+                    // Add record container with border
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.5);
+                    doc.rect(15, recordStartY - 5, pageWidth - 30, recordHeight);
+                    
+                    // Add date with background
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(15, recordStartY - 5, pageWidth - 30, 8, 'F');
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`Date: ${date}`, 20, recordStartY);
+                    yPos += 10;
+                    
+                    // Add treatment explanation
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Treatment Explanation:", 20, yPos);
+                    yPos += 5;
+                    doc.setFont("helvetica", "normal");
+                    
+                    // Add treatment text
+                    for (let i = 0; i < treatmentLines.length; i++) {
+                        doc.text(treatmentLines[i], 20, yPos);
+                        yPos += 5;
+                    }
+                    
+                    // Add feedback
+                    yPos += 3;
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Feedback:", 20, yPos);
+                    yPos += 5;
+                    doc.setFont("helvetica", "normal");
+                    
+                    // Add feedback text
+                    for (let i = 0; i < feedbackLines.length; i++) {
+                        doc.text(feedbackLines[i], 20, yPos);
+                        yPos += 5;
+                    }
+                    
+                    // Add space between records
+                    yPos += 10;
+                }
+            }
+        }
+        
+        // Add footer
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(100, 100, 100);
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        doc.text(`Report generated on: ${dateStr}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        
+        // Add page numbers
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 10);
+        }
+        
+        // Save PDF
+        doc.save(filename);
+    });
 
 });
 </script>
