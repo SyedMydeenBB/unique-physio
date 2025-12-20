@@ -106,6 +106,7 @@
           <th>Case No</th>
           <th>Age</th>
           <th>Gender</th>
+          <th>Diagnosis</th>
           <th>Cheif Complaint</th>
           <th>Reference</th>
           <th>Contact</th>
@@ -122,6 +123,7 @@
           <td><span class="badge bg-info">{{ patient.case_number }}</span></td>
           <td>{{ patient.age }}</td>
           <td>{{ patient.get_gender_display }}</td>
+          <td>{{ patient.diagnosis|default:"-" }}</td>
           <td>{{ patient.chief_complaint|truncatewords:5 }}</td>
           <td>{{ patient.reference|default:"-" }}</td>
           <td>{{ patient.contact|default:"-" }}</td>

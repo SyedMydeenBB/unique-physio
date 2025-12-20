@@ -11,7 +11,7 @@
       type="button"
       class="nav-link active"
       data-bs-toggle="tab"
-      data-bs-target="#addSheet"
+      data-bs-target="#addPC"
       role="tab">
       Add Patient
     </button>
@@ -33,7 +33,7 @@
 <div class="tab-content">
 
 <!-- ================= TAB 1 ================= -->
-<div class="tab-pane fade show active" id="addSheet" role="tabpanel">
+<div class="tab-pane fade show active" id="addPC" role="tabpanel">
 
 <form method="post">
 {% csrf_token %}
@@ -61,12 +61,13 @@
       {{ form.name }}
     </div>
 
-    <div class="col-lg-3 col-md-6">
+   <div class="col-lg-3 col-md-6">
       <label class="form-label fw-semibold">Diagnosis *</label>
       {{ form.diagnosis }}
     </div>
   </div>
 </div>
+
 
 <!-- PAYMENT INFORMATION -->
 <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
@@ -172,9 +173,8 @@
     </div>
   </div>
 </div>
-
 <div class="d-flex justify-content-end gap-3 border-top pt-4">
-  <a href="{% url 'daily_sheet_list' %}" class="btn btn-secondary px-4">Cancel</a>
+  <a href="{% url 'pc_list_list' %}" class="btn btn-secondary px-4">Cancel</a>
   <button type="submit" class="btn btn-primary px-4">Save Entry</button>
 </div>
 
@@ -216,8 +216,9 @@
 </div>
 </div>
 </div>
-<!-- Include jsPDF library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- [Scripts identical to daily_sheet_form.html but with PC-specific changes] -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -243,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!this.value) return;
 
-          fetch(`/ajax/check-case-number/?case_number=${this.value}`)
+          fetch(`/ajax/check-pc-number/?case_number=${this.value}`)
             .then(res => res.json())
             .then(data => {
                 if (data.exists) {
@@ -261,27 +262,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("f_gender").innerText = data.gender;
                     document.getElementById("f_diagnosis").innerText = data.diagnosis;
                     
-                    // Enable download button
                     downloadPdfBtn.disabled = false;
                 } else {
-                    // Check if there's a specific error message
                     if (data.error) {
                         alert(data.error);
                     } else {
                         alert("Patient not found. Create the patient first.");
                     }
                     
-                    // Clear patient-related fields
                     document.getElementById("id_name").value = "";
                     document.getElementById("id_diagnosis").value = "";
                     document.getElementById("id_patient_id").value = "";
                     
-                    // Reset patient variables
                     patientId = null;
                     patientName = "";
                     caseNumber = "";
                     
-                    // Clear follow-up tab fields
                     document.getElementById("f_name").innerText = "";
                     document.getElementById("f_case").innerText = "";
                     document.getElementById("f_age").innerText = "";
@@ -289,14 +285,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("f_diagnosis").innerText = "";
                     document.getElementById("followupBody").innerHTML = "";
                     
-                    // Disable download button
                     downloadPdfBtn.disabled = true;
                 }
             });
         });
     }
 
-    // Auto-fill out_time when payment status is changed
+// Auto-fill out_time when payment status is changed
     if (paymentStatusInput) {
         paymentStatusInput.addEventListener("change", function () {
             if (this.value && this.value !== "" && !document.getElementById("id_out_time").value) {
@@ -309,7 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
         followupTab.addEventListener("click", function () {
             if (!patientId) return;
 
-            fetch(`/ajax/patient-followups/${patientId}/`)
+            fetch(`/ajax/patient-pc-followups/${patientId}/`)
             .then(res => res.json())
             .then(data => {
                 let html = "";
@@ -512,7 +507,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Save PDF
         doc.save(filename);
     });
-
 });
 </script>
 

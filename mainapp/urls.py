@@ -6,12 +6,7 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('', views.user_login, name='user_login'),
 
-    path('pclist/', views.pclist_list, name='pclist_list'),
-    path('pclist/<int:pk>/', views.pclist_detail, name='pclist_detail'),
-    path('pclist/new/', views.pclist_create, name='pclist_create'),
-    path('pclist/<int:pk>/edit/', views.pclist_update, name='pclist_update'),
-    path('pclist/<int:pk>/delete/', views.pclist_delete, name='pclist_delete'),
-
+    
     path('patient/', views.patient_list, name='patient_list'),
     path('patient/new/', views.patient_create, name='patient_create'),
     path('patient/<int:pk>/edit/', views.patient_update, name='patient_update'),
@@ -27,5 +22,15 @@ urlpatterns = [
     path('dailysheet/<int:pk>/delete/', views.daily_sheet_delete, name='daily_sheet_delete'),
     path('dailysheet/export/', views.daily_sheet_export, name='daily_sheet_export'),
     path('dailysheet/import/', views.daily_sheet_import, name='daily_sheet_import'),
+
+
+    path('pclist/', views.pc_list_list, name='pc_list_list'),
+    path('pclist/new/', views.pc_list_create, name='pc_list_create'),
+    path('ajax/check-pc-number/', views.check_pc_number),
+    path('ajax/patient-pc-followups/<int:patient_id>/', views.patient_pc_followups),
+    path('pclist/<int:pk>/edit/', views.pc_list_update, name='pc_list_update'),
+    path('pclist/<int:pk>/delete/', views.pc_list_delete, name='pc_list_delete'),
+    path('pclist/export/', views.pc_list_export, name='pc_list_export'),
+    path('pclist/import/', views.pc_list_import, name='pc_list_import'),
 
 ]

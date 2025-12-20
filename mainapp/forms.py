@@ -1,7 +1,8 @@
 
 from django import forms
 from .models import *
-from django.forms import DateInput, DateTimeInput, TimeInput, CheckboxInput, Textarea, TextInput
+from django.forms import DateInput, DateTimeInput, TimeInput, CheckboxInput, Textarea, TextInput 
+from django.db.models.functions import ExtractYear
 
 class LoginForm(forms.Form):
     email=forms.CharField()
@@ -33,33 +34,38 @@ class GenericModelForm(forms.ModelForm):
                 field.widget = TextInput(attrs={'class': 'form-control'})
 
 
-class PCListForm(GenericModelForm):
-    class Meta:
-        model = PCList
-        fields = '__all__'
+# class PCListForm(forms.ModelForm):
+#     class Meta:
+#         model = PCList
+#         fields = '__all__'
+#         widgets = {
+#             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+#             'in_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+#             'out_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+#             # Add other field widgets as needed
+#         }
 
-class PatientForm(GenericModelForm):
-    class Meta:
-        model = Patient
-        fields = '__all__'
+# class PatientForm(GenericModelForm):
+#     class Meta:
+#         model = Patient
+#         fields = '__all__'
 
-class DailySheetForm(GenericModelForm):
-    class Meta:
-        model = DailySheet
-        fields = '__all__'
 
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
-        fields = ['name', 'case_number', 'age', 'gender', 'chief_complaint', 'reference', 'contact', 'address']
+        fields = ['name', 'case_number', 'age', 'gender', 'diagnosis','chief_complaint', 'reference', 'contact', 'address']
         widgets = {
-            'chief_complaint': forms.Textarea(attrs={'rows': 3}),
+            'chief_complaint': forms.Textarea(attrs={'rows': 2}),
             'address': forms.Textarea(attrs={'rows': 3}),
         }
     
     def clean_case_number(self):
         """Validate that case number is unique"""
         case_number = self.cleaned_data.get('case_number')
+
+        if case_number and not (case_number.startswith('UM') or case_number.startswith('PC')):
+            raise forms.ValidationError("Case number must start with 'UM' or 'PC'.")
         
         # Check if this is an update (instance exists) or create (new instance)
         if self.instance.pk:
@@ -143,8 +149,11 @@ class ExcelUploadForm(forms.Form):
     )
 
 
-from django import forms
-from .models import DailySheet
+
+class DailySheetForm(GenericModelForm):
+    class Meta:
+        model = DailySheet
+        fields = '__all__'
 
 class DailySheetFilterForm(forms.Form):
     case_number = forms.CharField(required=False, widget=forms.TextInput(attrs={
@@ -181,3 +190,54 @@ class DailySheetFilterForm(forms.Form):
         years = Patient.objects.annotate(year=ExtractYear('created_at')).values_list('year', flat=True).distinct().order_by('-year')
         year_choices = [('', 'All Years')] + [(str(year), str(year)) for year in years if year]
         self.fields['year'].choices = year_choices
+
+
+
+
+
+class PCListForm(forms.ModelForm):
+    class Meta:
+        model = PCList
+        fields = '__all__'
+        
+
+
+class PCListFilterForm(forms.Form):
+    case_number = forms.CharField(required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Case Number'
+    }))
+   
+    name = forms.CharField(required=False, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Patient Name'
+    }))
+    year = forms.ChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    payment_status = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All')] + PCList._meta.get_field('payment_status').choices,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    date_from = forms.DateField(required=False, widget=forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }))
+    date_to = forms.DateField(required=False, widget=forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }))
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        years = PCList.objects.annotate(year=ExtractYear('created_at')).values_list('year', flat=True).distinct().order_by('-year')
+        year_choices = [('', 'All Years')] + [(str(year), str(year)) for year in years if year]
+        self.fields['year'].choices = year_choices
+
+
+ 
+   

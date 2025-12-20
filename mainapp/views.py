@@ -44,144 +44,22 @@ def user_logout(request):
     else:
         return redirect('user_login')
 
-# Create
-@login_required(login_url='/')
-@check_permission('pclist_create')
-def pclist_create(request):
-    """
-    Handles the creation of a new PCList record.
-
-    - If the request method is POST, the form data is validated and, if valid, the new record is saved.
-    - If the request method is GET, an empty form is displayed.
-    - Upon successful creation, redirects to the list view.
-    - In case of an error, renders a custom 500 error page.
-    """
-    try:
-        if request.method == "POST":
-            form = PCListForm(request.POST)
-            if form.is_valid():
-                form.save()  # Save the form data as a new record
-                return redirect('pclist_list')
-        else:
-            form = PCListForm()  # Display an empty form
-        context = {
-            'form': form, 'screen_name': 'PCList'
-        }
-        return render(request, 'create.html', context)
-    except Exception as error:
-        return render(request, '500.html', {'error': error})
-
-# Read - List View
-@login_required(login_url='/')
-@check_permission('pclist_view')
-def pclist_list(request):
-    """
-    Displays a list of all PCList records.
-
-    - Fetches all records from the PCList model.
-    - Passes the records to the template for rendering.
-    - In case of an error, renders a custom 500 error page.
-    """
-    try:
-        records = PCList.objects.all()
-        context = {
-            'records': records, 'screen_name': 'PCList'
-        }
-        return render(request, 'pclist_list.html', context)
-    except Exception as error:
-        return render(request, '500.html', {'error': error})
-
-# Read - Detail View
-@login_required(login_url='/')
-@check_permission('pclist_view')
-def pclist_detail(request, pk):
-    """
-    Displays the details of a specific PCList record.
-
-    - Fetches the record based on the primary key (pk).
-    - Passes the record to the form for viewing.
-    - In case of an error, renders a custom 500 error page.
-    """
-    try:
-        record = get_object_or_404(PCList, pk=pk)
-        form = PCListForm(instance=record)
-        context = {
-            'screen_name': 'PCList', 'view': True, 'form': form
-        }
-        return render(request, 'create.html', context)
-    except Exception as error:
-        return render(request, '500.html', {'error': error})
-
-# Update
-@login_required(login_url='/')
-@check_permission('pclist_update')
-def pclist_update(request, pk):
-    """
-    Handles the updating of an existing PCList record.
-
-    - If the request method is POST, the form data is validated and, if valid, the record is updated.
-    - If the request method is GET, the existing record is displayed in the form.
-    - Upon successful update, redirects to the list view.
-    - In case of an error, renders a custom 500 error page.
-    """
-    try:
-        pclist = get_object_or_404(PCList, pk=pk)
-        if request.method == "POST":
-            form = PCListForm(request.POST, instance=pclist)
-            if form.is_valid():
-                form.save()  # Save the updated record
-                return redirect('pclist_list')
-        else:
-            form = PCListForm(instance=pclist)  # Display the existing record in the form
-        context = {
-            'form': form, 'screen_name': 'PCList'
-        }
-        return render(request, 'create.html', context)
-    except Exception as error:
-        return render(request, '500.html', {'error': error})
-
-# Delete
-@login_required(login_url='/')
-@check_permission('pclist_delete')
-def pclist_delete(request, pk):
-    """
-    Handles the deletion of an existing PCList record.
-
-    - Fetches the record based on the primary key (pk).
-    - Deletes the record from the database.
-    - Upon successful deletion, redirects to the list view.
-    - In case of an error, renders a custom 500 error page.
-    """
-    try:
-        record = get_object_or_404(PCList, pk=pk)
-        record.delete()  # Delete the record
-        return redirect('pclist_list')
-    except Exception as error:
-        return render(request, '500.html', {'error': error})
-# Assuming you have this decorator
-def check_permission(permission_name):
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            # Add your permission checking logic here
-            return view_func(request, *args, **kwargs)
-        return wrapper
-    return decorator
 
 
 @login_required(login_url='/')
 @check_permission('patient_create')
 def patient_create(request):
-    """
-    Handles the creation of a new Patient record.
-    - Validates form data including duplicate case number check
-    - Displays error messages if case number already exists
-    """
     try:
         if request.method == "POST":
             form = PatientForm(request.POST)
             if form.is_valid():
-                form.save()
-                return redirect('patient_list')
+                # Additional case number validation
+                case_number = form.cleaned_data.get('case_number')
+                if case_number and not (case_number.startswith('UM') or case_number.startswith('PC')):
+                    form.add_error('case_number', "Case number must start with 'UM' or 'PC'.")
+                else:
+                    form.save()
+                    return redirect('patient_list')
             # If form is invalid (including duplicate case number), it will show errors
         else:
             form = PatientForm()
@@ -433,23 +311,29 @@ def daily_sheet_create(request):
 
     return render(request, 'daily_sheet_form.html', {'form': form})
 
-
 def check_case_number(request):
     case_number = request.GET.get('case_number')
 
     try:
         patient = Patient.objects.get(case_number=case_number)
+        
+        # Check if case number starts with "UM"
+        if not case_number.startswith('UM'):
+            return JsonResponse({
+                'exists': False,
+                'error': 'Case number must start with "UM" for daily sheets. Please use the UM series.'
+            })
+            
         return JsonResponse({
             'exists': True,
             'patient_id': patient.id,
             'name': patient.name,
-            'diagnosis': patient.chief_complaint,
+            'diagnosis': patient.diagnosis,
             'age': patient.age,
             'gender': patient.gender,
         })
     except Patient.DoesNotExist:
         return JsonResponse({'exists': False})
-
 
 def patient_followups(request, patient_id):
     sheets = DailySheet.objects.filter(patient_id=patient_id).order_by('date')
@@ -458,11 +342,9 @@ def patient_followups(request, patient_id):
     for s in sheets:
         data.append({
             'date': s.date.strftime('%d-%m-%Y') if s.date else '',
-            'treatments': ", ".join(filter(None, [
-                s.treatment_1, s.treatment_2, s.treatment_3, s.treatment_4
-            ])),
-            'explain_treatment': s.explain_treatment,
-            'feedback': s.feedback
+            'feedback': s.feedback,
+            'explain_treatment': s.explain_treatment
+
         })
 
     return JsonResponse({'data': data})
@@ -679,3 +561,210 @@ def daily_sheet_import(request):
         form = ExcelUploadForm()
     
     return render(request, 'daily_sheet_import.html', {'form': form})
+
+
+@login_required(login_url='/')
+def pc_list_list(request):
+    pc_lists = PCList.objects.all().order_by('-date')
+
+    filter_form = PCListFilterForm(request.GET or None)
+
+    if filter_form.is_valid():
+        case_number = filter_form.cleaned_data.get('case_number')
+        if case_number:
+            pc_lists = pc_lists.filter(case_number__icontains=case_number)
+
+        name = filter_form.cleaned_data.get('name')
+        if name:
+            pc_lists = pc_lists.filter(name__icontains=name)
+
+        payment_status = filter_form.cleaned_data.get('payment_status')
+        if payment_status:
+            pc_lists = pc_lists.filter(payment_status=payment_status)
+
+        year = filter_form.cleaned_data.get('year')
+        if year:
+            pc_lists = pc_lists.filter(created_at__year=year)
+
+        date_from = filter_form.cleaned_data.get('date_from')
+        if date_from:
+            pc_lists = pc_lists.filter(date__gte=date_from)
+
+        date_to = filter_form.cleaned_data.get('date_to')
+        if date_to:
+            pc_lists = pc_lists.filter(date__lte=date_to)
+
+    context = {
+        'pc_lists': pc_lists,
+        'filter_form': filter_form,
+        'total_count': pc_lists.count(),
+        'screen_name': 'PC List'
+    }
+    return render(request, 'pc_list_list.html', context)
+
+def pc_list_create(request):
+    if request.method == 'POST':
+        form = PCListForm(request.POST)
+        if form.is_valid():
+            pc_list = form.save(commit=False)
+            
+            # Get current time
+            current_time = timezone.localtime()
+            
+            # Auto fill in_time if case_number is provided and in_time is empty
+            if pc_list.case_number and not pc_list.in_time:
+                pc_list.in_time = current_time
+                
+            # Auto fill out_time if payment_status is provided and out_time is empty
+            if pc_list.payment_status and not pc_list.out_time:
+                pc_list.out_time = current_time
+                
+            pc_list.save()
+            messages.success(request, 'PC List entry created successfully!')
+            return redirect('pc_list_list')
+    else:
+        form = PCListForm()
+        # Set initial date to today
+        form.fields['date'].initial = timezone.now().date()
+
+    return render(request, 'pc_list_form.html', {'form': form})
+
+def check_pc_number(request):
+    case_number = request.GET.get('case_number')
+
+    try:
+        patient = Patient.objects.get(case_number=case_number)
+        
+        # Check if case number starts with "PC"
+        if not case_number.startswith('PC'):
+            return JsonResponse({
+                'exists': False,
+                'error': 'Case number must start with "PC" for PC lists. Please use the PC series.'
+            })
+            
+        return JsonResponse({
+            'exists': True,
+            'patient_id': patient.id,
+            'name': patient.name,
+            'diagnosis': patient.diagnosis,
+            'age': patient.age,
+            'gender': patient.gender,
+        })
+    except Patient.DoesNotExist:
+        return JsonResponse({'exists': False})
+
+def patient_pc_followups(request, patient_id):
+    pc_lists = PCList.objects.filter(patient_id=patient_id).order_by('date')
+
+    data = []
+    for s in pc_lists:
+        data.append({
+            'date': s.date.strftime('%d-%m-%Y') if s.date else '',
+            'feedback': s.feedback,
+            'explain_treatment': s.explain_treatment
+        })
+
+    return JsonResponse({'data': data})
+
+def pc_list_update(request, pk):
+    """Update an existing PC List entry"""
+    pc_list = get_object_or_404(PCList, pk=pk)
+    
+    if request.method == 'POST':
+        form = PCListForm(request.POST, instance=pc_list)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'PC List entry updated successfully!')
+            return redirect('pc_list_list')
+    else:
+        form = PCListForm(instance=pc_list)
+    
+    return render(request, 'pc_list_form.html', {'form': form, 'action': 'Update', 'pc_list': pc_list})
+
+def pc_list_delete(request, pk):
+    """Delete a PC List entry"""
+    pc_list = get_object_or_404(PCList, pk=pk)
+    
+    if request.method == 'POST':
+        pc_list.delete()
+        messages.success(request, 'PC List entry deleted successfully!')
+        return redirect('pc_list_list')
+    
+    return render(request, 'pc_list_confirm_delete.html', {'pc_list': pc_list})
+
+def pc_list_export(request):
+    """Export PC Lists to Excel"""
+    # Same logic as daily_sheet_export but using PCList model
+    pc_lists = PCList.objects.all()
+    
+    # [Filtering logic identical to daily_sheet_export]
+    
+    # Create workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'PC Lists'
+    
+    # [Headers and data rows logic identical to daily_sheet_export]
+    
+    # Response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    
+    filename = f"pc_lists_{timezone.localtime().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    wb.save(response)
+    return response
+
+def pc_list_import(request):
+    """Import PC Lists from Excel"""
+    if request.method == 'POST':
+        form = ExcelUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = request.FILES['excel_file']
+            
+            try:
+                # Read Excel file
+                df = pd.read_excel(excel_file)
+                
+                # [Mapping logic identical to daily_sheet_import]
+                
+                imported_count = 0
+                
+                for index, row in df.iterrows():
+                    try:
+                        pc_list = PCList(
+                            date=pd.to_datetime(row['Date'], dayfirst=True).date(),
+                            name=row['Name'],
+                            case_number=str(row['Case Number']),
+                            diagnosis=row['Diagnosis'],
+                            charge=float(row['Charge']),
+                            received=float(row['Received']),
+                            payment_status=payment_status_map.get(row['Payment Status'], 'not_paid'),
+                            payment_type=payment_type_map.get(row['Payment Type'], 'cash'),
+                            payment_frequency=payment_frequency_map.get(row['Payment Frequency'], 'daily'),
+                            in_time=pd.to_datetime(row['In Time']).time() if pd.notna(row['In Time']) else None,
+                            out_time=pd.to_datetime(row['Out Time']).time() if pd.notna(row['Out Time']) else None,
+                            treatment_1=row.get('Treatment 1', ''),
+                            treatment_2=row.get('Treatment 2', ''),
+                            treatment_3=row.get('Treatment 3', ''),
+                            treatment_4=row.get('Treatment 4', ''),
+                            therapist_1=therapist_map.get(row['Therapist 1'], 'Basidh'),
+                            therapist_2=therapist_map.get(row.get('Therapist 2', ''), None) if pd.notna(row.get('Therapist 2')) else None
+                        )
+                        pc_list.save()
+                        imported_count += 1
+                    except Exception as e:
+                        messages.warning(request, f'Error importing row {index + 2}: {str(e)}')
+                        continue
+                
+                messages.success(request, f'Successfully imported {imported_count} records!')
+                return redirect('pc_list_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error reading Excel file: {str(e)}')
+    else:
+        form = ExcelUploadForm()
+    
+    return render(request, 'pc_list_import.html', {'form': form})

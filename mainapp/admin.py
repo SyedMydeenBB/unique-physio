@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import *
 
-@admin.register(PCList)
-class PCListAdmin(admin.ModelAdmin):
-    list_display = ['date', 'title', 'name', 'case_number', 'diagnosis', 'treatment_1', 'treatment_2', 'treatment_3', 'charge', 'received', 'payment_status', 'payment_type', 'payment_frequency', 'therapist']
+# @admin.register(PCList)
+# class PCListAdmin(admin.ModelAdmin):
+#     list_display = ['date', 'title', 'name', 'case_number', 'diagnosis', 'treatment_1', 'treatment_2', 'treatment_3', 'charge', 'received', 'payment_status', 'payment_type', 'payment_frequency', 'therapist']
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):

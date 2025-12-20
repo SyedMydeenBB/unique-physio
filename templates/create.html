@@ -103,18 +103,37 @@
           </div>
         </div>
 
-        <!-- MEDICAL -->
-        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
-          <h6 class="fw-semibold text-primary mb-3">
-            <i class="fas fa-stethoscope me-2"></i> Medical Information
-          </h6>
+          <!-- MEDICAL -->
+    <!-- MEDICAL -->
+<div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+  <h6 class="fw-semibold text-primary mb-3">
+    <i class="fas fa-stethoscope me-2"></i> Medical Information
+  </h6>
 
-          <label class="form-label fw-semibold">Chief Complaint *</label>
-          {{ form.chief_complaint }}
-          {% for error in form.chief_complaint.errors %}
-            <div class="text-danger small mt-1">{{ error }}</div>
-          {% endfor %}
-        </div>
+  <div class="row g-4">
+
+     <!-- Diagnosis -->
+    <div class="col-12">
+      <label class="form-label fw-semibold">Diagnosis</label>
+      {{ form.diagnosis }}
+      {% for error in form.diagnosis.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <!-- Chief Complaint -->
+    <div class="col-12">
+      <label class="form-label fw-semibold">Chief Complaint *</label>
+      {{ form.chief_complaint }}
+      {% for error in form.chief_complaint.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+   
+
+  </div>
+</div>
+
 
         <!-- ADDRESS -->
         <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
