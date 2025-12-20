@@ -3,7 +3,11 @@
 {% block body_block %}
 
 <div class="container-fluid py-4">
-
+ <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center bg-white rounded shadow-sm px-4 py-3 mb-4">
+    <h4 class="fw-semibold text-primary mb-0">Daily Sheet Management</h4>
+    <div id="datetime" class="text-muted small"></div>
+  </div>
 <!-- ================= TABS ================= -->
 <ul class="nav nav-tabs mb-3" role="tablist">
   <li class="nav-item">
@@ -514,6 +518,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.toLocaleDateString() + " | " + now.toLocaleTimeString();
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
 </script>
 
 {% endblock %}
