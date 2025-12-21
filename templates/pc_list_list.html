@@ -34,8 +34,46 @@
     <div class="card-body">
       <form method="get">
         <div class="row g-3">
-          <!-- [Form fields identical to daily_sheet_list.html] -->
-        </div>
+  <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Case Number</label>
+            {{ filter_form.case_number }}
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Patient Name</label>
+            {{ filter_form.name }}
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Payment Status</label>
+            {{ filter_form.payment_status }}
+          </div>
+
+           <!-- Year -->
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Registration Year</label>
+            {{ filter_form.year }}
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Date From</label>
+            {{ filter_form.date_from }}
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label fw-semibold">Date To</label>
+            {{ filter_form.date_to }}
+          </div>
+
+          <div class="col-lg-6 col-md-12 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-search me-1"></i> Apply Filters
+            </button>
+            <a href="{% url 'pc_list_list' %}" class="btn btn-secondary">
+              <i class="fas fa-redo me-1"></i> Clear All
+            </a>
+          </div>
+                </div>
       </form>
     </div>
   </div>

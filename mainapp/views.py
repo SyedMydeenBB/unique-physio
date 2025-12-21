@@ -32,9 +32,17 @@ def user_login(request):
     }
     return render(request, 'Auth/login.html', context)
 
+from django.utils.timezone import now
 
 def dashboard(request):
-    return render(request, 'dashboard.html',{'dashboard':'active'})
+    records = Patient.objects.all()
+    today = now().date()
+ 
+    sheets_today = DailySheet.objects.filter(date=today)
+    pc_lists_today = PCList.objects.filter(date=today)
+
+
+    return render(request, 'dashboard.html',{'dashboard':'active','total_count': records.count(), 'sheets_count': sheets_today.count(), 'pc_lists_count': pc_lists_today.count()})
 
 
 def user_logout(request):
