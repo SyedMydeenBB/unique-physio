@@ -109,7 +109,7 @@
                   <th>Treatment</th>
                    <th> Treatment</th>
                 <th>Therapist</th>
-                <th> Therapist</th>
+                {% comment %} <th> Therapist</th> {% endcomment %}
               <th class="text-center">Actions</th>
             </tr>
           </thead>
@@ -136,7 +136,7 @@
                    <td>{{ pc_list.treatment_3 }}</td>
                     <td>{{ pc_list.treatment_4 }}</td>
                    <td>{{ pc_list.therapist_1 }}</td>
-                    <td>{{ pc_list.therapist_2 }}</td>
+                    {% comment %} <td>{{ pc_list.therapist_2 }}</td> {% endcomment %}
                                    <td class="text-center">
                     <div class="btn-group btn-group-sm">
                       <a href="{% url 'pc_list_update' pc_list.id %}" class="btn btn-outline-primary">

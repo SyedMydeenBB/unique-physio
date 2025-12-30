@@ -74,8 +74,8 @@ class PCList(models.Model):
 	treatment_2 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)
 	treatment_3 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)
 	treatment_4 = models.CharField(max_length=20,blank=True, null=True ,choices=[('exercise', 'Exercise'), ('cycling', 'Cycling'), ('manual_therapy', 'Manual_therapy'), ('consultation', 'Consultation'), ('arm_ergometer', 'Arm_ergometer'), ('passive_stretching', 'Passive_stretching'), ('crepe_bandage', 'Crepe_bandage')],)
-	therapist_1 = models.CharField(max_length=20,blank=True, null=True ,choices=[('Basidh', 'Basidh'), ('Visitra', 'Visitra'), ('Bharatiselvi', 'Bharatiselvi')],)
-	therapist_2 = models.CharField(max_length=20,blank=True, null=True ,choices=[('Basidh', 'Basidh'), ('Visitra', 'Visitra'), ('Bharatiselvi', 'Bharatiselvi')],)
+	therapist_1 = models.CharField(max_length=20,blank=True, null=True ,choices=[('Basidh', 'Basidh'), ('Visitra', 'Visitra'), ('Bharatiselvi', 'Bharatiselvi'),('Suthish', 'Suthish')],)
+	# therapist_2 = models.CharField(max_length=20,blank=True, null=True ,choices=[('Basidh', 'Basidh'), ('Visitra', 'Visitra'), ('Bharatiselvi', 'Bharatiselvi')],)
 	created_at=models.DateTimeField(auto_now_add=True)
 	updated_at=models.DateTimeField(auto_now=True)
 	def __str__(self):
