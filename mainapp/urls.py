@@ -33,4 +33,12 @@ urlpatterns = [
     path('pclist/export/', views.pc_list_export, name='pc_list_export'),
     path('pclist/import/', views.pc_list_import, name='pc_list_import'),
 
+
+    path("payment_dashboard/", views.payment_dashboard, name="payment_dashboard"),
+    path("pending/", views.pending_list, name="pending_list"),
+    path("advance/", views.advance_list, name="advance_list"),
+    path("ledger/<int:patient_id>/", views.patient_ledger_view, name="patient_ledger"),
+    path("monthly/", views.monthly_summary, name="monthly_summary"),
+    path("yearly/", views.yearly_summary, name="yearly_summary"),
+
 ]

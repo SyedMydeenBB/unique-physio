@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block body_block %}
+
+<div class="container py-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+      <h5 class="fw-semibold text-primary mb-0">Yearly Summary</h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Year</th>
+            <th class="text-end">Charge</th>
+            <th class="text-end">Received</th>
+            <th class="text-end">Opening</th>
+            <th class="text-end">Closing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for k,v in summary.items %}
+          <tr>
+            <td>{{ k }}</td>
+            <td class="text-end">{{ v.charge }}</td>
+            <td class="text-end">{{ v.received }}</td>
+            <td class="text-end">{{ v.opening }}</td>
+            <td class="text-end fw-bold
+              {% if v.closing < 0 %}text-danger
+              {% elif v.closing > 0 %}text-success{% endif %}">
+              {{ v.closing }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

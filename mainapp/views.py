@@ -776,3 +776,128 @@ def pc_list_import(request):
         form = ExcelUploadForm()
     
     return render(request, 'pc_list_import.html', {'form': form})
+
+
+from collections import defaultdict
+from django.db.models import Sum
+
+
+def patient_ledger(patient):
+    sheets = DailySheet.objects.filter(patient_id=patient).order_by("date", "id")
+    balance = 0
+    ledger = []
+
+    for s in sheets:
+        charge = s.charge or 0
+        received = s.received or 0
+        balance += received - charge
+
+        ledger.append({
+            "date": s.date,
+            "case_number": s.case_number,
+            "contact": s.patient_id.contact,
+            "charge": charge,
+            "received": received,
+            "balance": balance,
+        })
+    return ledger, balance
+
+def payment_dashboard(request):
+    total_charge = DailySheet.objects.aggregate(t=Sum("charge"))["t"] or 0
+    total_received = DailySheet.objects.aggregate(t=Sum("received"))["t"] or 0
+
+    balance = total_received - total_charge
+
+    context = {
+        "total_charge": total_charge,
+        "total_received": total_received,
+        "total_pending": abs(balance) if balance < 0 else 0,
+        "total_advance": balance if balance > 0 else 0,
+    }
+    return render(request, "accounts/payment_dashboard.html", context)
+
+def pending_list(request):
+    data = []
+
+    for patient in Patient.objects.all():
+        _, balance = patient_ledger(patient)
+        if balance < 0:
+            data.append({
+                "patient": patient,
+                "pending": abs(balance)
+            })
+
+    return render(request, "accounts/pending_list.html", {"data": data})
+
+def advance_list(request):
+    data = []
+
+    for patient in Patient.objects.all():
+        _, balance = patient_ledger(patient)
+        if balance > 0:
+            data.append({
+                "patient": patient,
+                "advance": balance
+            })
+
+    return render(request, "accounts/advance_list.html", {"data": data})
+
+
+def patient_ledger_view(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    ledger, balance = patient_ledger(patient)
+
+    return render(request, "accounts/patient_ledger.html", {
+        "patient": patient,
+        "ledger": ledger,
+        "final_balance": balance
+    })
+
+
+def monthly_summary(request):
+    records = DailySheet.objects.order_by("date")
+
+    summary = defaultdict(lambda: {
+        "charge": 0, "received": 0, "opening": 0, "closing": 0
+    })
+
+    balance = 0
+
+    for r in records:
+        key = r.date.strftime("%Y-%m")
+        charge = r.charge or 0
+        received = r.received or 0
+
+        if summary[key]["charge"] == 0 and summary[key]["received"] == 0:
+            summary[key]["opening"] = balance
+
+        summary[key]["charge"] += charge
+        summary[key]["received"] += received
+        balance += received - charge
+        summary[key]["closing"] = balance
+
+    return render(request, "accounts/monthly_summary.html", {"summary": dict(summary)})
+
+def yearly_summary(request):
+    records = DailySheet.objects.order_by("date")
+
+    summary = defaultdict(lambda: {
+        "charge": 0, "received": 0, "opening": 0, "closing": 0
+    })
+
+    balance = 0
+
+    for r in records:
+        key = r.date.year
+        charge = r.charge or 0
+        received = r.received or 0
+
+        if summary[key]["charge"] == 0 and summary[key]["received"] == 0:
+            summary[key]["opening"] = balance
+
+        summary[key]["charge"] += charge
+        summary[key]["received"] += received
+        balance += received - charge
+        summary[key]["closing"] = balance
+
+    return render(request, "accounts/yearly_summary.html", {"summary": dict(summary)})
