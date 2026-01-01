@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block body_block %}
+
+<div class="container py-4">
+  <h4 class="mb-4">Attendance Approval</h4>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Staff</th>
+        <th>Date</th>
+        <th>Punch In</th>
+        <th>Punch Out</th>
+        <th>Total Hours</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in records %}
+      <tr>
+        <td>{{ a.user.first_name }}</td>
+        <td>{{ a.date }}</td>
+        <td>{{ a.punch_in_time }}</td>
+        <td>{{ a.punch_out_time }}</td>
+        <td>{{ a.total_seconds|floatformat:2 }}</td>
+        <td>
+          <a href="{% url 'approve_attendance' a.id %}" class="btn btn-sm btn-success">Approve</a>
+          <a href="{% url 'reject_attendance' a.id %}" class="btn btn-sm btn-danger">Reject</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center">No pending records</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

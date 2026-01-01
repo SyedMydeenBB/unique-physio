@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block body_block %}
+
+<div class="container py-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+      <h5 class="fw-semibold text-danger mb-0">Pending Patients</h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Patient</th>
+            <th class="text-end">Pending Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in data %}
+          <tr onclick="location.href='{% url 'pc_patient_ledger' d.patient.id %}'" style="cursor:pointer">
+            <td>{{ d.patient }}</td>
+            <td class="text-end text-danger fw-bold">{{ d.pending }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center text-muted py-4">No Pending Records</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -901,3 +901,120 @@ def yearly_summary(request):
         summary[key]["closing"] = balance
 
     return render(request, "accounts/yearly_summary.html", {"summary": dict(summary)})
+
+from collections import defaultdict
+from django.db.models import Sum
+from django.shortcuts import render, get_object_or_404
+
+def pc_patient_ledger_calc(patient):
+    records = PCList.objects.filter(patient_id=patient).order_by("date", "id")
+    balance = 0
+    ledger = []
+
+    for r in records:
+        charge = r.charge or 0
+        received = r.received or 0
+        balance += received - charge
+
+        ledger.append({
+            "date": r.date,
+            "case_number": r.case_number,
+            "charge": charge,
+            "received": received,
+            "balance": balance,
+        })
+
+    return ledger, balance
+def pc_payment_dashboard(request):
+    total_charge = PCList.objects.aggregate(t=Sum("charge"))["t"] or 0
+    total_received = PCList.objects.aggregate(t=Sum("received"))["t"] or 0
+
+    balance = total_received - total_charge
+
+    context = {
+        "total_charge": total_charge,
+        "total_received": total_received,
+        "total_pending": abs(balance) if balance < 0 else 0,
+        "total_advance": balance if balance > 0 else 0,
+    }
+    return render(request, "accounts/pc/payment_dashboard.html", context)
+
+def pc_pending_list(request):
+    data = []
+
+    for patient in Patient.objects.all():
+        _, balance = pc_patient_ledger_calc(patient)
+        if balance < 0:
+            data.append({
+                "patient": patient,
+                "pending": abs(balance)
+            })
+
+    return render(request, "accounts/pc/pending_list.html", {"data": data})
+def pc_advance_list(request):
+    data = []
+
+    for patient in Patient.objects.all():
+        _, balance = pc_patient_ledger_calc(patient)
+        if balance > 0:
+            data.append({
+                "patient": patient,
+                "advance": balance
+            })
+
+    return render(request, "accounts/pc/advance_list.html", {"data": data})
+def pc_patient_ledger(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)
+    ledger, balance = pc_patient_ledger_calc(patient)
+
+    return render(request, "accounts/pc/patient_ledger.html", {
+        "patient": patient,
+        "ledger": ledger,
+        "final_balance": balance
+    })
+def pc_monthly_summary(request):
+    records = PCList.objects.order_by("date")
+
+    summary = defaultdict(lambda: {
+        "charge": 0, "received": 0, "opening": 0, "closing": 0
+    })
+
+    balance = 0
+
+    for r in records:
+        key = r.date.strftime("%Y-%m")
+        charge = r.charge or 0
+        received = r.received or 0
+
+        if summary[key]["charge"] == 0 and summary[key]["received"] == 0:
+            summary[key]["opening"] = balance
+
+        summary[key]["charge"] += charge
+        summary[key]["received"] += received
+        balance += received - charge
+        summary[key]["closing"] = balance
+
+    return render(request, "accounts/pc/monthly_summary.html", {"summary": dict(summary)})
+def pc_yearly_summary(request):
+    records = PCList.objects.order_by("date")
+
+    summary = defaultdict(lambda: {
+        "charge": 0, "received": 0, "opening": 0, "closing": 0
+    })
+
+    balance = 0
+
+    for r in records:
+        key = r.date.year
+        charge = r.charge or 0
+        received = r.received or 0
+
+        if summary[key]["charge"] == 0 and summary[key]["received"] == 0:
+            summary[key]["opening"] = balance
+
+        summary[key]["charge"] += charge
+        summary[key]["received"] += received
+        balance += received - charge
+        summary[key]["closing"] = balance
+
+    return render(request, "accounts/pc/yearly_summary.html", {"summary": dict(summary)})

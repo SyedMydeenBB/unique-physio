@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block body_block %}
+
+<div class="container py-4">
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <h5 class="fw-semibold text-primary mb-1">{{ patient }}</h5>
+      <p class="text-muted mb-0">Complete Payment Ledger</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Case No</th>
+            <th>Contact</th>
+            <th class="text-end">Charge</th>
+            <th class="text-end">Received</th>
+            <th class="text-end">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in ledger %}
+          <tr>
+            <td>{{ l.date }}</td>
+            <td>{{ l.case_number }}</td>
+              <td>{{ l.contact }}</td>
+            <td class="text-end">{{ l.charge }}</td>
+            <td class="text-end">{{ l.received }}</td>
+            <td class="text-end fw-bold
+                {% if l.balance < 0 %}text-danger
+                {% elif l.balance > 0 %}text-success
+                {% else %}text-secondary{% endif %}">
+              {{ l.balance }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block body_block %}
+
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-body text-center">
+
+      <h4 class="mb-3">My Attendance</h4>
+
+      {% if attendance %}
+        <p>Status: <strong>{{ attendance.status }}</strong></p>
+
+        {% if not attendance.punch_in_time %}
+          <form method="post" action="{% url 'punch_in' %}">
+            {% csrf_token %}
+            <input type="hidden" name="lat" id="lat">
+            <input type="hidden" name="long" id="long">
+            <button class="btn btn-success">Punch In</button>
+          </form>
+        {% elif not attendance.punch_out_time %}
+          <form method="post" action="{% url 'punch_out' %}">
+            {% csrf_token %}
+            <input type="hidden" name="lat" id="lat">
+            <input type="hidden" name="long" id="long">
+            <button class="btn btn-danger">Punch Out</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <p>No attendance record today</p>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+navigator.geolocation.getCurrentPosition(function(position) {
+    document.getElementById("lat").value = position.coords.latitude;
+    document.getElementById("long").value = position.coords.longitude;
+});
+</script>
+
+{% endblock %}

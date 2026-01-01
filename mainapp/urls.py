@@ -41,4 +41,15 @@ urlpatterns = [
     path("monthly/", views.monthly_summary, name="monthly_summary"),
     path("yearly/", views.yearly_summary, name="yearly_summary"),
 
+# pc_payment_urls.py OR same urls.py
+
+    path("pc/payment-dashboard/", views.pc_payment_dashboard, name="pc_payment_dashboard"),
+    path("pc/pending/", views.pc_pending_list, name="pc_pending_list"),
+    path("pc/advance/", views.pc_advance_list, name="pc_advance_list"),
+    path("pc/ledger/<int:patient_id>/", views.pc_patient_ledger, name="pc_patient_ledger"),
+    path("pc/monthly/", views.pc_monthly_summary, name="pc_monthly_summary"),
+    path("pc/yearly/", views.pc_yearly_summary, name="pc_yearly_summary"),
+
+    
+
 ]

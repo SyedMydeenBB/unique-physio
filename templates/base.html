@@ -286,10 +286,31 @@ user-select: none;
     </a>
   </li>
 <li class="nav-item">
-  <a class="nav-link" href="{% url 'payment_dashboard' %}">
+  <a class="nav-link" data-bs-toggle="collapse" href="#paymentMenu" aria-expanded="false">
     <i class="icon-bar-graph menu-icon"></i>
-    <span class="menu-title">Payment Dashboard</span>
+    <span class="menu-title">Payments</span>
+    <i class="menu-arrow"></i>
   </a>
+
+  <div class="collapse" id="paymentMenu">
+    <ul class="nav flex-column sub-menu">
+
+      <!-- WORKING ITEM -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'payment_dashboard' %}">
+         DailySheet Payments
+        </a>
+      </li>
+
+      <!-- FUTURE USE -->
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'pc_payment_dashboard' %}">
+          PCList  Payments 
+        </a>
+      </li>
+
+    </ul>
+  </div>
 </li>
 
 

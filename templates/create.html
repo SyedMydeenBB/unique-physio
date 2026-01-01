@@ -50,7 +50,19 @@
               {% endfor %}
             </div>
 
-            <!-- CASE NUMBER 🔥 -->
+           
+
+          </div>
+        </div>
+
+        <!-- DEMOGRAPHIC -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-users me-2"></i> Demographic
+          </h6>
+
+          <div class="row g-4">
+             <!-- CASE NUMBER 🔥 -->
             <div class="col-lg-4 col-md-6">
               <label class="form-label fw-semibold">Case Number *</label>
               {{ form.case_number }}
@@ -67,17 +79,6 @@
                 <div class="text-danger small mt-1">{{ error }}</div>
               {% endfor %}
             </div>
-
-          </div>
-        </div>
-
-        <!-- DEMOGRAPHIC -->
-        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
-          <h6 class="fw-semibold text-primary mb-3">
-            <i class="fas fa-users me-2"></i> Demographic
-          </h6>
-
-          <div class="row g-4">
 
             <div class="col-lg-4 col-md-6">
               <label class="form-label fw-semibold">Gender *</label>
@@ -102,7 +103,14 @@
 
           </div>
         </div>
+  <!-- ADDRESS -->
+        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
+          <h6 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-map-marker-alt me-2"></i> Address
+          </h6>
 
+          {{ form.address }}
+        </div>
           <!-- MEDICAL -->
     <!-- MEDICAL -->
 <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
@@ -111,7 +119,14 @@
   </h6>
 
   <div class="row g-4">
-
+ <!-- Chief Complaint -->
+    <div class="col-12">
+      <label class="form-label fw-semibold">Chief Complaint *</label>
+      {{ form.chief_complaint }}
+      {% for error in form.chief_complaint.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+      {% endfor %}
+    </div>
      <!-- Diagnosis -->
     <div class="col-12">
       <label class="form-label fw-semibold">Diagnosis</label>
@@ -120,14 +135,7 @@
         <div class="text-danger small mt-1">{{ error }}</div>
       {% endfor %}
     </div>
-    <!-- Chief Complaint -->
-    <div class="col-12">
-      <label class="form-label fw-semibold">Chief Complaint *</label>
-      {{ form.chief_complaint }}
-      {% for error in form.chief_complaint.errors %}
-        <div class="text-danger small mt-1">{{ error }}</div>
-      {% endfor %}
-    </div>
+   
 
    
 
@@ -135,14 +143,7 @@
 </div>
 
 
-        <!-- ADDRESS -->
-        <div class="bg-light rounded border-start border-4 border-primary p-4 mb-4">
-          <h6 class="fw-semibold text-primary mb-3">
-            <i class="fas fa-map-marker-alt me-2"></i> Address
-          </h6>
-
-          {{ form.address }}
-        </div>
+      
 
         <!-- ACTION BUTTONS -->
         <div class="d-flex justify-content-end gap-3 border-top pt-4">
